@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_hr_payroll_grade_range_list" model="ir.ui.view">
+        <field name="name">hr.payroll.grade.range.list</field>
+        <field name="model">hr.payroll.grade.range</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="company_id"/>
+                <field name="structure_id"/>
+                <field name="grade"/>
+                <field name="min_basic"/>
+                <field name="max_basic"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_payroll_grade_range_form" model="ir.ui.view">
+        <field name="name">hr.payroll.grade.range.form</field>
+        <field name="model">hr.payroll.grade.range</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="company_id"/>
+                        <field name="structure_id"/>
+                        <field name="grade"/>
+                    </group>
+                    <group>
+                        <field name="min_basic"/>
+                        <field name="max_basic"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_payroll_grade_range" model="ir.actions.act_window">
+        <field name="name">Grade Ranges</field>
+        <field name="res_model">hr.payroll.grade.range</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+    id="menu_hr_payroll_grade_range"
+    name="Grade Ranges"
+    parent="hr_work_entry_enterprise.menu_hr_payroll_root"
+    action="action_hr_payroll_grade_range"
+    sequence="110"
+    groups="hr_payroll.group_hr_payroll_user"/>
+
+</odoo>
