@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Grade List View -->
+        <record id="view_grade_list" model="ir.ui.view">
+            <field name="name">grade.list</field>
+            <field name="model">grade</field>
+            <field name="arch" type="xml">
+                <list string="Grades">
+                    <field name="name"/>
+                    <field name="category"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="min_wage"/>
+                    <field name="max_wage"/>
+                    <field name="subgrade_ids" widget="many2many_tags" string="Sub Grades"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Grade Form View -->
+        <record id="view_grade_form" model="ir.ui.view">
+            <field name="name">grade.form</field>
+            <field name="model">grade</field>
+            <field name="arch" type="xml">
+                <form string="Grade">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="category"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                            <group>
+                                <field name="min_wage"/>
+                                <field name="max_wage"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Sub Grades">
+                                <field name="subgrade_ids">
+                                    <list string="Sub Grades" editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                        <field name="min_wage"/>
+                                        <field name="max_wage"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Grade Search View -->
+        <record id="view_grade_search" model="ir.ui.view">
+            <field name="name">grade.search</field>
+            <field name="model">grade</field>
+            <field name="arch" type="xml">
+                <search string="Search Grades">
+                    <field name="name"/>
+                    <field name="category"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <filter string="Category A" name="category_a" domain="[('category', '=', 'A')]"/>
+                    <filter string="Category B" name="category_b" domain="[('category', '=', 'B')]"/>
+                    <filter string="Category C" name="category_c" domain="[('category', '=', 'C')]"/>
+                    <filter string="My Company" name="my_company" domain="[('company_id', '=', company_id)]" groups="base.group_multi_company"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Grade Action -->
+        <record id="action_grade" model="ir.actions.act_window">
+            <field name="name">Grades</field>
+            <field name="res_model">grade</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Grade!
+                </p>
+                <p>
+                    Grades define wage ranges for employees. You can add sub-grades within each grade with specific wage ranges.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menu Item -->
+        <menuitem id="menu_grade" name="Grades" parent="hr_payroll.menu_hr_salary_configuration" action="action_grade" sequence="50"/>
+    </data>
+</odoo>
