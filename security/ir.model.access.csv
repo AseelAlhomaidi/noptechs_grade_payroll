@@ -1,3 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_hr_payroll_grade_range_user,hr.payroll.grade.range user,model_hr_payroll_grade_range,hr_payroll.group_hr_payroll_user,1,0,0,0
-access_hr_payroll_grade_range_manager,hr.payroll.grade.range manager,model_hr_payroll_grade_range,hr_payroll.group_hr_payroll_manager,1,1,1,1
+access_grade_user,grade.user,model_grade,base.group_user,1,1,1,1
+access_subgrade_user,subgrade.user,model_grade_subgrade,base.group_user,1,1,1,1

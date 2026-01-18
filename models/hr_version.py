@@ -1,86 +1,39 @@
-from odoo import api, fields, models, _
+from odoo import models, api, _
 from odoo.exceptions import ValidationError
 
+
 class HrVersion(models.Model):
-    _inherit = "hr.version"
+    _inherit = 'hr.version'
 
-    grade = fields.Selection(
-        selection=[("A", "A"), ("B", "B"), ("C", "C")],
-        string="Grade",
-        compute="_compute_grade_from_wage",
-        store=True,
-        readonly=False,   # allow manual override if you want
-        tracking=True,
-    )
-
-    @api.depends("wage", "structure_id", "structure_type_id", "company_id")
-    def _compute_grade_from_wage(self):
-        for v in self:
-            v.grade = v.grade or "A"  # fallback if you want something when no wage
-            if v.wage is None:
+    @api.constrains('wage')
+    def _check_wage_against_grade(self):
+        """Validate wage against employee's grade or subgrade range"""
+        for version in self:
+            employee = version.employee_id
+            if not employee or not version.wage:
                 continue
-
-            structure = v.structure_id or (v.structure_type_id.default_struct_id if v.structure_type_id else False)
-            if not structure:
-                continue
-
-            ranges = self.env["hr.payroll.grade.range"].search([
-                ("company_id", "=", v.company_id.id),
-                ("structure_id", "=", structure.id),
-            ])
-
-            match = ranges.filtered(lambda r: r.min_basic <= v.wage <= r.max_basic)[:1]
-            if match:
-                v.grade = match.grade
-            else:
-                # if no grade fits wage, clear grade so user sees it’s invalid
-                v.grade = False
-
-
-    @api.constrains("wage", "grade", "structure_id", "structure_type_id", "company_id")
-    def _check_wage_grade_range(self):
-        for v in self:
-            if v.wage is None:
-                continue
-
-            structure = v.structure_id or (v.structure_type_id.default_struct_id if v.structure_type_id else False)
-            if not structure:
-                continue
-
-            ranges = self.env["hr.payroll.grade.range"].search([
-                ("company_id", "=", v.company_id.id),
-                ("structure_id", "=", structure.id),
-            ])
-
-            if not ranges:
-                raise ValidationError(_(
-                    "No grade ranges are configured for this Structure.\n\n"
-                    "Structure: %(structure)s",
-                    structure=structure.name,
-                ))
-
-            # If grade is empty or doesn't match wage -> error with the correct matching ranges
-            match = ranges.filtered(lambda r: r.min_basic <= v.wage <= r.max_basic)[:1]
-            if not match:
-                raise ValidationError(_(
-                    "The Wage does not fall into any configured grade range.\n\n"
-                    "Structure: %(structure)s\n"
-                    "Entered Wage: %(wage).2f",
-                    structure=structure.name,
-                    wage=v.wage,
-                ))
-
-            # If user manually set grade different from computed match, block
-            if v.grade and v.grade != match.grade:
-                raise ValidationError(_(
-                    "Selected Grade does not match the Wage range.\n\n"
-                    "Structure: %(structure)s\n"
-                    "Expected Grade: %(expected)s\n"
-                    "Selected Grade: %(selected)s\n"
-                    "Entered Wage: %(wage).2f",
-                    structure=structure.name,
-                    expected=match.grade,
-                    selected=v.grade,
-                    wage=v.wage,
-                ))
-
+            
+            wage = version.wage
+            
+            # If subgrade is selected, validate against subgrade range
+            if employee.subgrade_id:
+                subgrade = employee.subgrade_id
+                if subgrade.min_wage and wage < subgrade.min_wage:
+                    raise ValidationError(_(
+                        'Wage (%.2f) is below the minimum wage (%.2f) for sub-grade "%s".'
+                    ) % (wage, subgrade.min_wage, subgrade.name))
+                if subgrade.max_wage and wage > subgrade.max_wage:
+                    raise ValidationError(_(
+                        'Wage (%.2f) exceeds the maximum wage (%.2f) for sub-grade "%s".'
+                    ) % (wage, subgrade.max_wage, subgrade.name))
+            # If only grade is selected, validate against grade range
+            elif employee.grade_id:
+                grade = employee.grade_id
+                if grade.min_wage and wage < grade.min_wage:
+                    raise ValidationError(_(
+                        'Wage (%.2f) is below the minimum wage (%.2f) for grade "%s".'
+                    ) % (wage, grade.min_wage, grade.name))
+                if grade.max_wage and wage > grade.max_wage:
+                    raise ValidationError(_(
+                        'Wage (%.2f) exceeds the maximum wage (%.2f) for grade "%s".'
+                    ) % (wage, grade.max_wage, grade.name))

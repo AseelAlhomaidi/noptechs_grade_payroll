@@ -1,0 +1,15 @@
+<odoo>
+  <data>
+    <record id="view_employee_form_inherit_grade_payroll" model="ir.ui.view">
+      <field name="name">view.employee.form.inherit.grade.payroll</field>
+      <field name="model">hr.employee</field>
+      <field name="inherit_id" ref="hr.view_employee_form"/>
+      <field name="arch" type="xml">
+        <field name="job_id" position="after">
+          <field name="grade_id" />
+          <field name="subgrade_id" invisible="not grade_id" />
+        </field>
+      </field>
+    </record>
+  </data>
+</odoo>
